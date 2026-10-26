@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/marlyngiselle/macos-security-audit/macaudit/data/report.schema.json",
+  "title": "macaudit report",
+  "description": "Machine-readable result of one macaudit run. Contains no hostname, user name, serial number or file contents.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "tool", "generated_at", "host", "policy", "summary", "areas", "results"],
+  "$defs": {
+    "severity": {"enum": ["info", "low", "medium", "high", "critical"]},
+    "status": {"enum": ["pass", "fail", "unknown", "skipped"]},
+    "count": {"type": "integer", "minimum": 0}
+  },
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": {"const": "macaudit"},
+        "version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"}
+      }
+    },
+    "generated_at": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"},
+    "host": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["os", "os_version", "build", "arch", "ran_as_root"],
+      "properties": {
+        "os": {"const": "macOS"},
+        "os_version": {"type": "string"},
+        "build": {"type": "string"},
+        "arch": {"type": "string"},
+        "ran_as_root": {"type": "boolean"}
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fail_on", "exit_code"],
+      "properties": {
+        "fail_on": {"enum": ["none", "low", "medium", "high", "critical"]},
+        "exit_code": {"enum": [0, 11, 12, 13, 14]}
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total", "pass", "fail", "unknown", "skipped", "score", "failed_by_severity"],
+      "properties": {
+        "total": {"$ref": "#/$defs/count"},
+        "pass": {"$ref": "#/$defs/count"},
+        "fail": {"$ref": "#/$defs/count"},
+        "unknown": {"$ref": "#/$defs/count"},
+        "skipped": {"$ref": "#/$defs/count"},
+        "score": {"type": ["integer", "null"], "minimum": 0, "maximum": 100},
+        "failed_by_severity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["info", "low", "medium", "high", "critical"],
+          "properties": {
+            "info": {"$ref": "#/$defs/count"},
+            "low": {"$ref": "#/$defs/count"},
+            "medium": {"$ref": "#/$defs/count"},
+            "high": {"$ref": "#/$defs/count"},
+            "critical": {"$ref": "#/$defs/count"}
+          }
+        }
+      }
+    },
+    "areas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "pass", "fail", "unknown", "skipped"],
+        "properties": {
+          "id": {"type": "string"},
+          "title": {"type": "string"},
+          "pass": {"$ref": "#/$defs/count"},
+          "fail": {"$ref": "#/$defs/count"},
+          "unknown": {"$ref": "#/$defs/count"},
+          "skipped": {"$ref": "#/$defs/count"}
+        }
+      }
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "area", "severity", "status", "reason", "evidence", "requires_root", "probe", "references"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^MA-[A-Z]{2,3}-\\d{2}$"},
+          "title": {"type": "string"},
+          "area": {"type": "string"},
+          "severity": {"$ref": "#/$defs/severity"},
+          "status": {"$ref": "#/$defs/status"},
+          "reason": {"type": "string"},
+          "evidence": {"type": ["string", "null"], "maxLength": 200},
+          "requires_root": {"type": "boolean"},
+          "probe": {"type": "string"},
+          "references": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}

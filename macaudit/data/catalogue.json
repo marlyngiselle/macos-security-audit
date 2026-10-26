@@ -1,0 +1,685 @@
+{
+  "schema_version": 1,
+  "areas": {
+    "encryption": {
+      "title": "Encryption at rest",
+      "description": "Data on the internal disk and on backup destinations is unreadable without the owner's credentials."
+    },
+    "firewall": {
+      "title": "Application firewall",
+      "description": "Inbound connections are filtered and the machine does not answer probes it has no reason to answer."
+    },
+    "integrity": {
+      "title": "Platform integrity",
+      "description": "Gatekeeper, System Integrity Protection, the sealed system volume and XProtect are in their protective state."
+    },
+    "updates": {
+      "title": "Software updates",
+      "description": "Security fixes and malware definitions arrive without waiting for a person to click."
+    },
+    "login": {
+      "title": "Screen lock and login",
+      "description": "An unattended or stolen session cannot be used without the password."
+    },
+    "sharing": {
+      "title": "Sharing services",
+      "description": "No remote access or file service listens unless it was turned on on purpose."
+    },
+    "wireless": {
+      "title": "Bluetooth, AirDrop and Wi-Fi",
+      "description": "Nearby radios do not expose the machine to strangers."
+    },
+    "browser": {
+      "title": "Safari hygiene",
+      "description": "The default browser does not open downloads on its own and warns about known phishing sites."
+    },
+    "identity": {
+      "title": "Credentials inventory",
+      "description": "Inventory facts about credential storage. Recorded for context, never scored."
+    },
+    "ssh": {
+      "title": "SSH client",
+      "description": "Keys and client configuration do not leak trust to other users or other hosts."
+    },
+    "shell": {
+      "title": "Shell environment",
+      "description": "Shell history stays private and nothing on PATH can be replaced by another user."
+    },
+    "packages": {
+      "title": "Third-party packages",
+      "description": "Package managers outside Apple's update channel are kept current."
+    }
+  },
+  "checks": [
+    {
+      "id": "MA-ENC-01",
+      "title": "FileVault is enabled",
+      "area": "encryption",
+      "severity": "critical",
+      "rationale": "Without FileVault the internal disk can be read by anyone who holds the machine. A lost or stolen laptop becomes a data breach.",
+      "expected": "fdesetup reports FileVault is On and no decryption is in progress.",
+      "probe": {"type": "command", "argv": ["fdesetup", "status"]},
+      "evaluate": [
+        {"when": "regex", "pattern": "Decryption in progress", "status": "fail", "reason": "FileVault is being turned off."},
+        {"when": "regex", "pattern": "FileVault is On", "status": "pass", "reason": "FileVault is on."},
+        {"when": "regex", "pattern": "FileVault is Off", "status": "fail", "reason": "FileVault is off."}
+      ],
+      "remediation": [
+        "Open System Settings, Privacy and Security, FileVault, and choose Turn On.",
+        "Store the recovery key somewhere other than the laptop itself, or escrow it to your organisation.",
+        "Run `fdesetup status` again once encryption has finished."
+      ],
+      "references": ["CIS-style section: Privacy and Security, FileVault", "NIST SP 800-53 SC-28", "Apple Platform Security guide: volume encryption with FileVault"]
+    },
+    {
+      "id": "MA-ENC-02",
+      "title": "Time Machine destinations are encrypted",
+      "area": "encryption",
+      "severity": "medium",
+      "rationale": "A backup disk holds the same data as the laptop. An unencrypted backup undoes FileVault the moment the disk is lost.",
+      "expected": "Every configured Time Machine destination reports LastKnownEncryptionState = Encrypted, or no destination is configured.",
+      "probe": {"type": "command", "argv": ["defaults", "read", "/Library/Preferences/com.apple.TimeMachine", "Destinations"]},
+      "evaluate": [
+        {"when": "regex", "pattern": "does not exist", "status": "skipped", "reason": "No Time Machine destination is configured."},
+        {"when": "regex", "pattern": "LastKnownEncryptionState = NotEncrypted", "status": "fail", "reason": "At least one destination is not encrypted."},
+        {"when": "regex", "pattern": "LastKnownEncryptionState = Encrypted", "status": "pass", "reason": "All destinations report encryption."},
+        {"when": "regex", "pattern": "^\\(\\s*\\)\\s*$", "status": "skipped", "reason": "No Time Machine destination is configured."}
+      ],
+      "remediation": [
+        "Open System Settings, General, Time Machine.",
+        "Remove the unencrypted destination and add it again with Encrypt Backup selected.",
+        "Keep the backup password in your password manager, not on the disk."
+      ],
+      "references": ["CIS-style section: Backups, Time Machine", "NIST SP 800-53 CP-9", "NIST SP 800-53 SC-28"]
+    },
+    {
+      "id": "MA-FW-01",
+      "title": "Application firewall is enabled",
+      "area": "firewall",
+      "severity": "high",
+      "rationale": "The application firewall blocks inbound connections to services nobody approved. It is the last filter on hostile networks such as hotels and conferences.",
+      "expected": "socketfilterfw reports State = 1 or State = 2.",
+      "probe": {"type": "command", "argv": ["/usr/libexec/ApplicationFirewall/socketfilterfw", "--getglobalstate"]},
+      "evaluate": [
+        {"when": "regex", "pattern": "State = [12]", "status": "pass", "reason": "Firewall is enabled."},
+        {"when": "regex", "pattern": "State = 0", "status": "fail", "reason": "Firewall is disabled."},
+        {"when": "regex", "pattern": "managed Mac", "status": "unknown", "reason": "Firewall is managed by a configuration profile and not readable here."}
+      ],
+      "remediation": [
+        "Open System Settings, Network, Firewall, and turn it on.",
+        "On a managed Mac, ask for the firewall payload in the configuration profile instead."
+      ],
+      "references": ["CIS-style section: Network, Firewall", "NIST SP 800-53 SC-7"]
+    },
+    {
+      "id": "MA-FW-02",
+      "title": "Firewall stealth mode is enabled",
+      "area": "firewall",
+      "severity": "medium",
+      "rationale": "Stealth mode stops the Mac from answering ICMP and closed-port probes, which makes it harder to discover on a shared network.",
+      "expected": "socketfilterfw reports stealth mode on.",
+      "probe": {"type": "command", "argv": ["/usr/libexec/ApplicationFirewall/socketfilterfw", "--getstealthmode"]},
+      "evaluate": [
+        {"when": "regex", "pattern": "(?i)stealth mode (is on|enabled)", "status": "pass", "reason": "Stealth mode is on."},
+        {"when": "regex", "pattern": "(?i)stealth mode (is off|disabled)", "status": "fail", "reason": "Stealth mode is off."},
+        {"when": "regex", "pattern": "managed Mac", "status": "unknown", "reason": "Firewall is managed by a configuration profile and not readable here."}
+      ],
+      "remediation": [
+        "Open System Settings, Network, Firewall, Options, and turn on Enable stealth mode.",
+        "The firewall itself must be on for stealth mode to have any effect."
+      ],
+      "references": ["CIS-style section: Network, Firewall", "NIST SP 800-53 SC-7"]
+    },
+    {
+      "id": "MA-FW-03",
+      "title": "Firewall logging is enabled",
+      "area": "firewall",
+      "severity": "low",
+      "rationale": "Firewall logs are the only local record of blocked inbound attempts. Without them an investigation starts blind.",
+      "expected": "socketfilterfw reports log mode on.",
+      "probe": {"type": "command", "argv": ["/usr/libexec/ApplicationFirewall/socketfilterfw", "--getloggingmode"]},
+      "evaluate": [
+        {"when": "regex", "pattern": "(?i)log mode is on", "status": "pass", "reason": "Logging is on."},
+        {"when": "regex", "pattern": "(?i)log mode is off", "status": "fail", "reason": "Logging is off."},
+        {"when": "regex", "pattern": "managed Mac", "status": "unknown", "reason": "Firewall is managed by a configuration profile and not readable here."}
+      ],
+      "remediation": [
+        "Run `sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setloggingmode on`.",
+        "On a managed Mac, enable logging in the firewall payload of the profile."
+      ],
+      "references": ["CIS-style section: Logging and auditing", "NIST SP 800-53 AU-2"]
+    },
+    {
+      "id": "MA-INT-01",
+      "title": "Gatekeeper is enabled",
+      "area": "integrity",
+      "severity": "high",
+      "rationale": "Gatekeeper refuses to launch downloaded software that is not signed and notarised. It is the first barrier against trojanised installers.",
+      "expected": "spctl reports assessments enabled.",
+      "probe": {"type": "command", "argv": ["spctl", "--status"]},
+      "evaluate": [
+        {"when": "regex", "pattern": "assessments enabled", "status": "pass", "reason": "Gatekeeper is on."},
+        {"when": "regex", "pattern": "assessments disabled", "status": "fail", "reason": "Gatekeeper is off."}
+      ],
+      "remediation": [
+        "Run `sudo spctl --global-enable`, or open System Settings, Privacy and Security, and allow apps from the App Store and identified developers.",
+        "If a single app needs an exception, approve that app instead of turning Gatekeeper off."
+      ],
+      "references": ["CIS-style section: Privacy and Security, Gatekeeper", "NIST SP 800-53 SI-3", "NIST SP 800-53 CM-14"]
+    },
+    {
+      "id": "MA-INT-02",
+      "title": "System Integrity Protection is enabled",
+      "area": "integrity",
+      "severity": "critical",
+      "rationale": "SIP stops even root from modifying protected system files and processes. With SIP off, malware that gains root can persist inside the operating system.",
+      "expected": "csrutil reports status enabled with no custom configuration.",
+      "probe": {"type": "command", "argv": ["csrutil", "status"]},
+      "evaluate": [
+        {"when": "regex", "pattern": "Custom Configuration", "status": "fail", "reason": "SIP runs with a custom, partially disabled configuration."},
+        {"when": "regex", "pattern": "status: enabled", "status": "pass", "reason": "SIP is enabled."},
+        {"when": "regex", "pattern": "status: disabled", "status": "fail", "reason": "SIP is disabled."}
+      ],
+      "remediation": [
+        "Restart into macOS Recovery.",
+        "Open Terminal from the Utilities menu and run `csrutil enable`.",
+        "Restart and confirm with `csrutil status`."
+      ],
+      "references": ["CIS-style section: System integrity", "NIST SP 800-53 SI-7", "Apple Platform Security guide: System Integrity Protection"]
+    },
+    {
+      "id": "MA-INT-03",
+      "title": "Sealed system volume is authenticated",
+      "area": "integrity",
+      "severity": "high",
+      "rationale": "Authenticated root verifies the cryptographic seal of the system volume at boot. Disabling it allows a modified system to start without warning.",
+      "expected": "csrutil reports Authenticated Root status enabled.",
+      "probe": {"type": "command", "argv": ["csrutil", "authenticated-root", "status"]},
+      "evaluate": [
+        {"when": "regex", "pattern": "Authenticated Root status: enabled", "status": "pass", "reason": "The system volume seal is enforced."},
+        {"when": "regex", "pattern": "Authenticated Root status: disabled", "status": "fail", "reason": "The system volume seal is not enforced."}
+      ],
+      "remediation": [
+        "Restart into macOS Recovery.",
+        "Run `csrutil authenticated-root enable` in Terminal and restart."
+      ],
+      "references": ["CIS-style section: System integrity", "NIST SP 800-53 SI-7", "Apple Platform Security guide: signed system volume"]
+    },
+    {
+      "id": "MA-INT-04",
+      "title": "XProtect definitions are present",
+      "area": "integrity",
+      "severity": "medium",
+      "rationale": "XProtect is the built-in signature scanner. If its bundle is missing, known malware families are not blocked at launch.",
+      "expected": "The XProtect bundle reports a numeric version.",
+      "probe": {"type": "command", "argv": ["defaults", "read", "/Library/Apple/System/Library/CoreServices/XProtect.bundle/Contents/Info.plist", "CFBundleShortVersionString"]},
+      "evaluate": [
+        {"when": "regex", "pattern": "does not exist", "status": "fail", "reason": "The XProtect bundle was not found."},
+        {"when": "int_range", "pattern": "^\\s*(\\d+)\\s*$", "min": 1, "status": "pass", "otherwise": "fail", "reason": "XProtect definitions version {value} are installed.", "otherwise_reason": "XProtect reports an invalid version {value}."}
+      ],
+      "remediation": [
+        "Turn on Install Security Responses and system files in System Settings, General, Software Update, Automatic Updates.",
+        "Run `softwareupdate --background` to fetch the latest definitions."
+      ],
+      "references": ["CIS-style section: Software updates, security responses", "NIST SP 800-53 SI-3"]
+    },
+    {
+      "id": "MA-UPD-01",
+      "title": "Automatic update checks are enabled",
+      "area": "updates",
+      "severity": "medium",
+      "rationale": "If macOS never checks for updates, nobody learns that a fix exists. Every other update control depends on this one.",
+      "expected": "AutomaticCheckEnabled is 1.",
+      "probe": {"type": "command", "argv": ["defaults", "read", "/Library/Preferences/com.apple.SoftwareUpdate", "AutomaticCheckEnabled"]},
+      "evaluate": [
+        {"when": "regex", "pattern": "^\\s*1\\s*$", "status": "pass", "reason": "Automatic checks are on."},
+        {"when": "regex", "pattern": "^\\s*0\\s*$", "status": "fail", "reason": "Automatic checks are off."},
+        {"when": "regex", "pattern": "does not exist", "status": "unknown", "reason": "Not set locally. The macOS default or a configuration profile applies."}
+      ],
+      "remediation": [
+        "Open System Settings, General, Software Update, Automatic Updates, and turn on Check for updates.",
+        "Or run `sudo defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticCheckEnabled -bool true`."
+      ],
+      "references": ["CIS-style section: Software updates", "NIST SP 800-53 SI-2"]
+    },
+    {
+      "id": "MA-UPD-02",
+      "title": "Security responses and system files install automatically",
+      "area": "updates",
+      "severity": "high",
+      "rationale": "This setting delivers XProtect and other security data updates. Turning it off leaves malware definitions frozen at their last version.",
+      "expected": "ConfigDataInstall is 1.",
+      "probe": {"type": "command", "argv": ["defaults", "read", "/Library/Preferences/com.apple.SoftwareUpdate", "ConfigDataInstall"]},
+      "evaluate": [
+        {"when": "regex", "pattern": "^\\s*1\\s*$", "status": "pass", "reason": "Security data installs automatically."},
+        {"when": "regex", "pattern": "^\\s*0\\s*$", "status": "fail", "reason": "Security data does not install automatically."},
+        {"when": "regex", "pattern": "does not exist", "status": "unknown", "reason": "Not set locally. The macOS default or a configuration profile applies."}
+      ],
+      "remediation": [
+        "Open System Settings, General, Software Update, Automatic Updates, and turn on Install Security Responses and system files.",
+        "Or run `sudo defaults write /Library/Preferences/com.apple.SoftwareUpdate ConfigDataInstall -bool true`."
+      ],
+      "references": ["CIS-style section: Software updates, security responses", "NIST SP 800-53 SI-2", "NIST SP 800-53 SI-3"]
+    },
+    {
+      "id": "MA-UPD-03",
+      "title": "Critical updates install automatically",
+      "area": "updates",
+      "severity": "high",
+      "rationale": "Rapid security fixes are only useful if they land without waiting for a person. Exploited vulnerabilities are often patched through this channel.",
+      "expected": "CriticalUpdateInstall is 1.",
+      "probe": {"type": "command", "argv": ["defaults", "read", "/Library/Preferences/com.apple.SoftwareUpdate", "CriticalUpdateInstall"]},
+      "evaluate": [
+        {"when": "regex", "pattern": "^\\s*1\\s*$", "status": "pass", "reason": "Critical updates install automatically."},
+        {"when": "regex", "pattern": "^\\s*0\\s*$", "status": "fail", "reason": "Critical updates wait for manual installation."},
+        {"when": "regex", "pattern": "does not exist", "status": "unknown", "reason": "Not set locally. The macOS default or a configuration profile applies."}
+      ],
+      "remediation": [
+        "Open System Settings, General, Software Update, Automatic Updates, and turn on Install Security Responses and system files.",
+        "Or run `sudo defaults write /Library/Preferences/com.apple.SoftwareUpdate CriticalUpdateInstall -bool true`."
+      ],
+      "references": ["CIS-style section: Software updates", "NIST SP 800-53 SI-2"]
+    },
+    {
+      "id": "MA-UPD-04",
+      "title": "macOS updates install automatically",
+      "area": "updates",
+      "severity": "medium",
+      "rationale": "Point releases carry most security fixes. Machines that wait for a manual click fall weeks behind.",
+      "expected": "AutomaticallyInstallMacOSUpdates is 1.",
+      "probe": {"type": "command", "argv": ["defaults", "read", "/Library/Preferences/com.apple.SoftwareUpdate", "AutomaticallyInstallMacOSUpdates"]},
+      "evaluate": [
+        {"when": "regex", "pattern": "^\\s*1\\s*$", "status": "pass", "reason": "macOS updates install automatically."},
+        {"when": "regex", "pattern": "^\\s*0\\s*$", "status": "fail", "reason": "macOS updates wait for manual installation."},
+        {"when": "regex", "pattern": "does not exist", "status": "unknown", "reason": "Not set locally. The macOS default or a configuration profile applies."}
+      ],
+      "remediation": [
+        "Open System Settings, General, Software Update, Automatic Updates, and turn on Install macOS updates.",
+        "Or run `sudo defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticallyInstallMacOSUpdates -bool true`."
+      ],
+      "references": ["CIS-style section: Software updates", "NIST SP 800-53 SI-2"]
+    },
+    {
+      "id": "MA-LGN-01",
+      "title": "Screen lock requires a password",
+      "area": "login",
+      "severity": "high",
+      "rationale": "When the screen saver starts or the lid closes, the session must not resume without the password. An unlocked laptop needs no exploit.",
+      "expected": "sysadminctl reports a screen lock delay rather than screen lock off.",
+      "probe": {"type": "command", "argv": ["sysadminctl", "-screenLock", "status"]},
+      "evaluate": [
+        {"when": "regex", "pattern": "screenLock is off", "status": "fail", "reason": "Screen lock is off."},
+        {"when": "regex", "pattern": "screenLock delay is", "status": "pass", "reason": "Screen lock is on."}
+      ],
+      "remediation": [
+        "Open System Settings, Lock Screen, and set Require password after screen saver begins or display is turned off.",
+        "Or run `sysadminctl -screenLock immediate -password -` and type your password when prompted."
+      ],
+      "references": ["CIS-style section: Lock screen", "NIST SP 800-53 AC-11"]
+    },
+    {
+      "id": "MA-LGN-02",
+      "title": "Screen lock engages within five seconds",
+      "area": "login",
+      "severity": "medium",
+      "rationale": "A long grace period lets someone wake an unattended laptop without a password. Five seconds covers an accidental screen saver and nothing more.",
+      "expected": "sysadminctl reports a delay of immediate or five seconds or less.",
+      "probe": {"type": "command", "argv": ["sysadminctl", "-screenLock", "status"]},
+      "evaluate": [
+        {"when": "regex", "pattern": "screenLock delay is (immediate|[0-5] seconds?)", "status": "pass", "reason": "Screen lock delay is five seconds or less."},
+        {"when": "regex", "pattern": "screenLock delay is \\d+ seconds?", "status": "fail", "reason": "Screen lock delay is longer than five seconds."},
+        {"when": "regex", "pattern": "screenLock is off", "status": "fail", "reason": "Screen lock is off."}
+      ],
+      "remediation": [
+        "Open System Settings, Lock Screen, and set Require password to Immediately.",
+        "Or run `sysadminctl -screenLock immediate -password -`."
+      ],
+      "references": ["CIS-style section: Lock screen", "NIST SP 800-53 AC-11"]
+    },
+    {
+      "id": "MA-LGN-03",
+      "title": "Screen saver starts within 20 minutes of inactivity",
+      "area": "login",
+      "severity": "medium",
+      "rationale": "The lock only helps if it starts. A screen saver set to never leaves the session open indefinitely.",
+      "expected": "idleTime is between 1 and 1200 seconds.",
+      "probe": {"type": "command", "argv": ["defaults", "-currentHost", "read", "com.apple.screensaver", "idleTime"]},
+      "evaluate": [
+        {"when": "regex", "pattern": "does not exist", "status": "unknown", "reason": "Not set for this user. The macOS default or a configuration profile applies."},
+        {"when": "int_range", "pattern": "^\\s*(\\d+)\\s*$", "min": 1, "max": 1200, "status": "pass", "otherwise": "fail", "reason": "Screen saver starts after {value} seconds.", "otherwise_reason": "Screen saver starts after {value} seconds, or never when the value is 0."}
+      ],
+      "remediation": [
+        "Open System Settings, Lock Screen, and set Start Screen Saver when inactive to 20 minutes or less.",
+        "Or run `defaults -currentHost write com.apple.screensaver idleTime -int 600`."
+      ],
+      "references": ["CIS-style section: Lock screen", "NIST SP 800-53 AC-11"]
+    },
+    {
+      "id": "MA-LGN-04",
+      "title": "Automatic login is disabled",
+      "area": "login",
+      "severity": "high",
+      "rationale": "Automatic login hands a full session to whoever opens the lid after a restart, and it is incompatible with FileVault protection at boot.",
+      "expected": "No autoLoginUser is configured for the login window.",
+      "probe": {"type": "command", "argv": ["defaults", "read", "/Library/Preferences/com.apple.loginwindow", "autoLoginUser"]},
+      "sensitive": true,
+      "evaluate": [
+        {"when": "regex", "pattern": "does not exist", "status": "pass", "reason": "No automatic login user is set."},
+        {"when": "exit", "codes": [0], "status": "fail", "reason": "An automatic login user is configured."}
+      ],
+      "remediation": [
+        "Open System Settings, Users and Groups, and set Automatically log in as to Off.",
+        "Or run `sudo defaults delete /Library/Preferences/com.apple.loginwindow autoLoginUser`."
+      ],
+      "references": ["CIS-style section: Users and groups, login window", "NIST SP 800-53 IA-2"]
+    },
+    {
+      "id": "MA-LGN-05",
+      "title": "Guest account is disabled",
+      "area": "login",
+      "severity": "medium",
+      "rationale": "The guest account gives anyone a local session without a password, which is a foothold for local privilege escalation.",
+      "expected": "GuestEnabled is 0 or not set.",
+      "probe": {"type": "command", "argv": ["defaults", "read", "/Library/Preferences/com.apple.loginwindow", "GuestEnabled"]},
+      "evaluate": [
+        {"when": "regex", "pattern": "^\\s*0\\s*$", "status": "pass", "reason": "Guest account is off."},
+        {"when": "regex", "pattern": "^\\s*1\\s*$", "status": "fail", "reason": "Guest account is on."},
+        {"when": "regex", "pattern": "does not exist", "status": "pass", "reason": "Not set. The guest account is off by default."}
+      ],
+      "remediation": [
+        "Open System Settings, Users and Groups, Guest User, and turn off Allow guests to log in to this computer.",
+        "Or run `sudo defaults write /Library/Preferences/com.apple.loginwindow GuestEnabled -bool false`."
+      ],
+      "references": ["CIS-style section: Users and groups, guest account", "NIST SP 800-53 AC-2"]
+    },
+    {
+      "id": "MA-SHR-01",
+      "title": "Remote Login (SSH server) is off",
+      "area": "sharing",
+      "severity": "high",
+      "rationale": "An SSH server on a laptop is a network-reachable login prompt that roams across untrusted networks. Few laptops need one.",
+      "expected": "launchd reports com.openssh.sshd as disabled or not overridden.",
+      "probe": {"type": "command", "argv": ["launchctl", "print-disabled", "system"]},
+      "evaluate": [
+        {"when": "regex", "pattern": "\"com\\.openssh\\.sshd\" => (enabled|false)", "status": "fail", "reason": "Remote Login is on."},
+        {"when": "regex", "pattern": "\"com\\.openssh\\.sshd\" => (disabled|true)", "status": "pass", "reason": "Remote Login is off."},
+        {"when": "regex", "pattern": "disabled services = \\{", "status": "pass", "reason": "Not overridden. Remote Login is off by default."}
+      ],
+      "remediation": [
+        "Open System Settings, General, Sharing, and turn off Remote Login.",
+        "If you need it, restrict it to named users and keep the firewall on."
+      ],
+      "references": ["CIS-style section: Sharing, remote login", "NIST SP 800-53 AC-17", "NIST SP 800-53 CM-7"]
+    },
+    {
+      "id": "MA-SHR-02",
+      "title": "Screen Sharing is off",
+      "area": "sharing",
+      "severity": "high",
+      "rationale": "Screen Sharing exposes a VNC-compatible service that grants full interactive control. It is a common target for password spraying.",
+      "expected": "launchd reports com.apple.screensharing as disabled or not overridden.",
+      "probe": {"type": "command", "argv": ["launchctl", "print-disabled", "system"]},
+      "evaluate": [
+        {"when": "regex", "pattern": "\"com\\.apple\\.screensharing\" => (enabled|false)", "status": "fail", "reason": "Screen Sharing is on."},
+        {"when": "regex", "pattern": "\"com\\.apple\\.screensharing\" => (disabled|true)", "status": "pass", "reason": "Screen Sharing is off."},
+        {"when": "regex", "pattern": "disabled services = \\{", "status": "pass", "reason": "Not overridden. Screen Sharing is off by default."}
+      ],
+      "remediation": [
+        "Open System Settings, General, Sharing, and turn off Screen Sharing.",
+        "Use a brokered remote support tool that requires the user's consent per session instead."
+      ],
+      "references": ["CIS-style section: Sharing, screen sharing", "NIST SP 800-53 AC-17", "NIST SP 800-53 CM-7"]
+    },
+    {
+      "id": "MA-SHR-03",
+      "title": "File Sharing (SMB server) is off",
+      "area": "sharing",
+      "severity": "medium",
+      "rationale": "An SMB server on a laptop publishes folders to every network it joins. Shared folders are rarely reviewed after the first use.",
+      "expected": "launchd reports com.apple.smbd as disabled or not overridden.",
+      "probe": {"type": "command", "argv": ["launchctl", "print-disabled", "system"]},
+      "evaluate": [
+        {"when": "regex", "pattern": "\"com\\.apple\\.smbd\" => (enabled|false)", "status": "fail", "reason": "File Sharing is on."},
+        {"when": "regex", "pattern": "\"com\\.apple\\.smbd\" => (disabled|true)", "status": "pass", "reason": "File Sharing is off."},
+        {"when": "regex", "pattern": "disabled services = \\{", "status": "pass", "reason": "Not overridden. File Sharing is off by default."}
+      ],
+      "remediation": [
+        "Open System Settings, General, Sharing, and turn off File Sharing.",
+        "Share files through a managed cloud service with expiring links instead."
+      ],
+      "references": ["CIS-style section: Sharing, file sharing", "NIST SP 800-53 CM-7"]
+    },
+    {
+      "id": "MA-SHR-04",
+      "title": "Printer Sharing is off",
+      "area": "sharing",
+      "severity": "low",
+      "rationale": "Printer Sharing runs a CUPS listener reachable from the local network. It adds attack surface for a feature laptops rarely need.",
+      "expected": "cupsctl reports _share_printers=0.",
+      "probe": {"type": "command", "argv": ["cupsctl"]},
+      "evaluate": [
+        {"when": "regex", "pattern": "_share_printers=0", "status": "pass", "reason": "Printer Sharing is off."},
+        {"when": "regex", "pattern": "_share_printers=1", "status": "fail", "reason": "Printer Sharing is on."}
+      ],
+      "remediation": [
+        "Open System Settings, General, Sharing, and turn off Printer Sharing.",
+        "Or run `cupsctl --no-share-printers`."
+      ],
+      "references": ["CIS-style section: Sharing, printer sharing", "NIST SP 800-53 CM-7"]
+    },
+    {
+      "id": "MA-SHR-05",
+      "title": "Remote Apple Events are off",
+      "area": "sharing",
+      "severity": "medium",
+      "rationale": "Remote Apple Events let other machines drive applications on this one through AppleScript. The feature is rarely needed and easy to forget.",
+      "expected": "systemsetup reports Remote Apple Events: Off.",
+      "probe": {"type": "command", "argv": ["systemsetup", "-getremoteappleevents"], "requires_root": true},
+      "evaluate": [
+        {"when": "regex", "pattern": "Remote Apple Events: Off", "status": "pass", "reason": "Remote Apple Events are off."},
+        {"when": "regex", "pattern": "Remote Apple Events: On", "status": "fail", "reason": "Remote Apple Events are on."},
+        {"when": "regex", "pattern": "administrator access", "status": "skipped", "reason": "Requires administrator access."}
+      ],
+      "remediation": [
+        "Open System Settings, General, Sharing, and turn off Remote Application Scripting.",
+        "Or run `sudo systemsetup -setremoteappleevents off`."
+      ],
+      "references": ["CIS-style section: Sharing, remote Apple events", "NIST SP 800-53 AC-17", "NIST SP 800-53 CM-7"]
+    },
+    {
+      "id": "MA-WL-01",
+      "title": "Bluetooth Sharing is off",
+      "area": "wireless",
+      "severity": "medium",
+      "rationale": "Bluetooth Sharing accepts files from nearby devices. It is a delivery channel for unsolicited content in public spaces.",
+      "expected": "PrefKeyServicesEnabled is 0 or not set.",
+      "probe": {"type": "command", "argv": ["defaults", "-currentHost", "read", "com.apple.Bluetooth", "PrefKeyServicesEnabled"]},
+      "evaluate": [
+        {"when": "regex", "pattern": "^\\s*0\\s*$", "status": "pass", "reason": "Bluetooth Sharing is off."},
+        {"when": "regex", "pattern": "^\\s*1\\s*$", "status": "fail", "reason": "Bluetooth Sharing is on."},
+        {"when": "regex", "pattern": "does not exist", "status": "pass", "reason": "Not set. Bluetooth Sharing is off by default."}
+      ],
+      "remediation": [
+        "Open System Settings, General, Sharing, and turn off Bluetooth Sharing."
+      ],
+      "references": ["CIS-style section: Sharing, Bluetooth sharing", "NIST SP 800-53 AC-18"]
+    },
+    {
+      "id": "MA-WL-02",
+      "title": "AirDrop is not discoverable by everyone",
+      "area": "wireless",
+      "severity": "medium",
+      "rationale": "AirDrop set to Everyone shows the device name to strangers and lets them push content. Contacts Only keeps the convenience without the exposure.",
+      "expected": "DiscoverableMode is Contacts Only or Off, or not set.",
+      "probe": {"type": "command", "argv": ["defaults", "read", "com.apple.sharingd", "DiscoverableMode"]},
+      "evaluate": [
+        {"when": "regex", "pattern": "Everyone", "status": "fail", "reason": "AirDrop is discoverable by everyone."},
+        {"when": "regex", "pattern": "Contacts Only|Off", "status": "pass", "reason": "AirDrop is limited to contacts or off."},
+        {"when": "regex", "pattern": "does not exist", "status": "pass", "reason": "Not set. AirDrop defaults to Contacts Only."}
+      ],
+      "remediation": [
+        "Open Control Centre, AirDrop, and choose Contacts Only or Receiving Off.",
+        "Turn on Everyone for 10 Minutes only when you need it."
+      ],
+      "references": ["CIS-style section: Sharing, AirDrop", "NIST SP 800-53 AC-18"]
+    },
+    {
+      "id": "MA-WL-03",
+      "title": "Remembered Wi-Fi networks stay under 30",
+      "area": "wireless",
+      "severity": "low",
+      "rationale": "Every remembered network is a name the laptop will join automatically. A long list of hotel and café networks makes evil twin attacks easy.",
+      "expected": "The Wi-Fi interface remembers 30 networks or fewer.",
+      "probe": {"type": "builtin", "name": "wifi_known_networks", "params": {"max": 30}},
+      "remediation": [
+        "Open System Settings, Wi-Fi, Advanced, and remove networks you no longer use.",
+        "Turn off Auto-Join for public networks you keep."
+      ],
+      "references": ["CIS-style section: Network, Wi-Fi", "NIST SP 800-53 AC-18"]
+    },
+    {
+      "id": "MA-WEB-01",
+      "title": "Safari does not open downloaded files automatically",
+      "area": "browser",
+      "severity": "medium",
+      "rationale": "Open safe files after downloading runs archives and documents without a decision from the user. Several drive-by chains have relied on it.",
+      "expected": "AutoOpenSafeDownloads is 0.",
+      "probe": {"type": "command", "argv": ["defaults", "read", "com.apple.Safari", "AutoOpenSafeDownloads"]},
+      "evaluate": [
+        {"when": "regex", "pattern": "^\\s*0\\s*$", "status": "pass", "reason": "Automatic opening is off."},
+        {"when": "regex", "pattern": "^\\s*1\\s*$", "status": "fail", "reason": "Automatic opening is on."},
+        {"when": "regex", "pattern": "does not exist", "status": "unknown", "reason": "Not readable. Safari settings live in a sandbox container that needs Full Disk Access, or the default applies."}
+      ],
+      "remediation": [
+        "Open Safari, Settings, General, and clear Open safe files after downloading."
+      ],
+      "references": ["CIS-style section: Applications, Safari", "NIST SP 800-53 SI-3"]
+    },
+    {
+      "id": "MA-WEB-02",
+      "title": "Safari warns about fraudulent websites",
+      "area": "browser",
+      "severity": "medium",
+      "rationale": "The fraudulent website warning blocks known phishing pages before credentials are typed.",
+      "expected": "WarnAboutFraudulentWebsites is 1.",
+      "probe": {"type": "command", "argv": ["defaults", "read", "com.apple.Safari", "WarnAboutFraudulentWebsites"]},
+      "evaluate": [
+        {"when": "regex", "pattern": "^\\s*1\\s*$", "status": "pass", "reason": "Fraudulent website warning is on."},
+        {"when": "regex", "pattern": "^\\s*0\\s*$", "status": "fail", "reason": "Fraudulent website warning is off."},
+        {"when": "regex", "pattern": "does not exist", "status": "unknown", "reason": "Not readable. Safari settings live in a sandbox container that needs Full Disk Access, or the default applies."}
+      ],
+      "remediation": [
+        "Open Safari, Settings, Security, and select Warn when visiting a fraudulent website."
+      ],
+      "references": ["CIS-style section: Applications, Safari", "NIST SP 800-53 SI-3"]
+    },
+    {
+      "id": "MA-ID-01",
+      "title": "iCloud Keychain sync is present (inventory)",
+      "area": "identity",
+      "severity": "info",
+      "rationale": "Knowing whether a synced password store exists helps decide where to recommend credentials live. The probe records presence only and never reads items or account names.",
+      "expected": "The signed-in account lists the keychain sync service as enabled.",
+      "probe": {"type": "command", "argv": ["defaults", "read", "MobileMeAccounts", "Accounts"]},
+      "sensitive": true,
+      "evaluate": [
+        {"when": "regex", "pattern": "Enabled = 1;\\s*Name = \"?KEYCHAIN_SYNC", "status": "pass", "reason": "iCloud Keychain sync is enabled."},
+        {"when": "regex", "pattern": "KEYCHAIN_SYNC", "status": "fail", "reason": "An iCloud account is signed in without keychain sync."},
+        {"when": "regex", "pattern": "does not exist", "status": "fail", "reason": "No iCloud account is signed in."}
+      ],
+      "remediation": [
+        "No action is required. This is an inventory item.",
+        "If your organisation standardises on a different password manager, record that instead."
+      ],
+      "references": ["CIS-style section: Apple account and iCloud", "NIST SP 800-53 IA-5"]
+    },
+    {
+      "id": "MA-SSH-01",
+      "title": "SSH directory and private keys are private",
+      "area": "ssh",
+      "severity": "medium",
+      "rationale": "If ~/.ssh or a private key is readable by other local users, any compromised account on the machine inherits your access to every server.",
+      "expected": "~/.ssh is 0700, private keys and authorized_keys are not group or world accessible.",
+      "probe": {"type": "builtin", "name": "ssh_permissions"},
+      "remediation": [
+        "Run `chmod 700 ~/.ssh`.",
+        "Run `chmod 600` on every private key and on `~/.ssh/authorized_keys`."
+      ],
+      "references": ["CIS-style section: User environment, SSH", "NIST SP 800-53 AC-6", "NIST SP 800-53 IA-5"]
+    },
+    {
+      "id": "MA-SSH-02",
+      "title": "SSH client configuration keeps host verification",
+      "area": "ssh",
+      "severity": "medium",
+      "rationale": "StrictHostKeyChecking no, a known hosts file of /dev/null, or agent forwarding to every host turns a single malicious server into access to all the others.",
+      "expected": "~/.ssh/config does not disable host key checking and does not forward the agent to Host *.",
+      "probe": {"type": "builtin", "name": "ssh_config"},
+      "remediation": [
+        "Remove `StrictHostKeyChecking no` and `UserKnownHostsFile /dev/null` from `~/.ssh/config`.",
+        "Move `ForwardAgent yes` under the specific Host entries that need it, or use ProxyJump instead."
+      ],
+      "references": ["CIS-style section: User environment, SSH", "NIST SP 800-53 IA-3", "NIST SP 800-53 SC-23"]
+    },
+    {
+      "id": "MA-SSH-03",
+      "title": "SSH private keys are protected by a passphrase",
+      "area": "ssh",
+      "severity": "medium",
+      "rationale": "An unencrypted private key on disk is a credential that any process running as you can copy. A passphrase, or a hardware-backed key, keeps a stolen file useless.",
+      "expected": "Every private key in ~/.ssh is encrypted.",
+      "probe": {"type": "builtin", "name": "ssh_unencrypted_keys"},
+      "remediation": [
+        "Add a passphrase with `ssh-keygen -p -f <key file>` and store it in the macOS keychain with `ssh-add --apple-use-keychain`.",
+        "Better still, move to a hardware-backed key such as a FIDO2 security key (`ssh-keygen -t ed25519-sk`)."
+      ],
+      "references": ["CIS-style section: User environment, SSH", "NIST SP 800-53 IA-5"]
+    },
+    {
+      "id": "MA-SHL-01",
+      "title": "Shell history files are private",
+      "area": "shell",
+      "severity": "low",
+      "rationale": "Shell history routinely captures tokens and passwords typed on the command line. Other local users must not be able to read it.",
+      "expected": "History files in the home directory are not group or world readable.",
+      "probe": {"type": "builtin", "name": "history_permissions"},
+      "remediation": [
+        "Run `chmod 600` on each history file listed in the finding.",
+        "Prefer environment files or a secret manager over typing secrets into the shell."
+      ],
+      "references": ["CIS-style section: User environment, home directory", "NIST SP 800-53 AC-3"]
+    },
+    {
+      "id": "MA-SHL-02",
+      "title": "No writable or relative directories in PATH",
+      "area": "shell",
+      "severity": "high",
+      "rationale": "If any directory on PATH is world-writable, or PATH contains a relative entry, another user or a downloaded archive can plant a binary that runs instead of the real one.",
+      "expected": "Every PATH entry is absolute and none is world-writable.",
+      "probe": {"type": "builtin", "name": "path_writable"},
+      "remediation": [
+        "Remove `.` and empty entries from PATH in your shell profile.",
+        "Run `chmod o-w` on each world-writable directory listed in the finding, or drop it from PATH."
+      ],
+      "references": ["CIS-style section: User environment, PATH", "NIST SP 800-53 CM-6", "NIST SP 800-53 SI-7"]
+    },
+    {
+      "id": "MA-PKG-01",
+      "title": "Homebrew packages are mostly current",
+      "area": "packages",
+      "severity": "low",
+      "rationale": "Homebrew sits outside Apple's update channel. Outdated formulae and casks accumulate known vulnerabilities silently.",
+      "expected": "brew outdated lists 10 packages or fewer.",
+      "probe": {"type": "command", "argv": ["brew", "outdated", "--quiet"], "env": {"HOMEBREW_NO_AUTO_UPDATE": "1", "HOMEBREW_NO_ANALYTICS": "1"}, "timeout": 120},
+      "evaluate": [
+        {"when": "exit", "codes": [0], "negate": true, "status": "unknown", "reason": "brew outdated did not complete."},
+        {"when": "line_count", "max": 10, "status": "pass", "otherwise": "fail", "reason": "{value} outdated packages, within the limit of 10.", "otherwise_reason": "{value} outdated packages, above the limit of 10."}
+      ],
+      "remediation": [
+        "Run `brew update && brew upgrade`.",
+        "Remove packages you no longer use with `brew autoremove` and `brew uninstall`."
+      ],
+      "references": ["CIS-style section: Software updates, third-party software", "NIST SP 800-53 SI-2", "NIST SP 800-53 SR-3"]
+    }
+  ]
+}
