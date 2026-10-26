@@ -1,0 +1,114 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Weekly audit of a fresh macOS runner image, to catch new macOS output formats early.
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+      - name: Install lint tools
+        run: python -m pip install --disable-pip-version-check -r requirements-dev.txt
+      - name: Ruff
+        run: |
+          ruff check .
+          ruff format --check .
+      - name: Mypy (strict)
+        run: mypy
+      - name: ShellCheck
+        run: shellcheck bin/macaudit examples/fleet/run-macaudit.sh
+
+  test:
+    name: Unit tests (Python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.9 is what /usr/bin/python3 is on macOS. The tool must keep running there.
+        python: ["3.9", "3.13"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install test dependency
+        run: python -m pip install --disable-pip-version-check -r requirements-test.txt
+      - name: Run unit tests against recorded fixtures
+        run: python -m unittest discover -s tests -t . -v
+      - name: Replay the sample host end to end
+        run: |
+          mkdir -p out
+          python -m macaudit run --replay examples/replay/sample-host.json --no-color \
+            --fail-on none --json-out out/sample.json --sarif-out out/sample.sarif
+          python -m macaudit render --input out/sample.json --format markdown > /dev/null
+
+  audit-macos:
+    name: Audit the macOS runner
+    needs: [lint, test]
+    runs-on: macos-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write # upload SARIF to code scanning
+      actions: read # required by upload-sarif on private forks
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Run macaudit with the system Python (standard library only)
+        run: |
+          /usr/bin/python3 --version
+          /usr/bin/python3 -m macaudit run --no-color --fail-on none \
+            --json-out out/macaudit.json \
+            --markdown-out out/macaudit.md \
+            --sarif-out out/macaudit.sarif
+      - name: Job summary
+        if: always()
+        run: |
+          if [ -f out/macaudit.json ]; then
+            {
+              echo "> Results describe an ephemeral GitHub-hosted runner, not a managed laptop."
+              echo
+              /usr/bin/python3 -m macaudit render --input out/macaudit.json --format markdown
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload JSON and Markdown reports
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: macaudit-report-macos
+          path: |
+            out/macaudit.json
+            out/macaudit.md
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload SARIF to code scanning
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          sarif_file: out/macaudit.sarif
+          category: macaudit-macos-runner
