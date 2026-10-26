@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-labelledby="t d">
+  <title id="t">macos-security-audit</title>
+  <desc id="d">A shield with a padlock, scanned by concentric rings and a checklist, on a navy to blue gradient.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1f4d"/>
+      <stop offset="1" stop-color="#2456c8"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.80" cy="0.5" r="0.42">
+      <stop offset="0" stop-color="#9bbcff" stop-opacity="0.38"/>
+      <stop offset="1" stop-color="#9bbcff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="shield" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.06"/>
+    </linearGradient>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#ffffff" fill-opacity="0.07"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="300" fill="url(#bg)"/>
+  <rect width="1200" height="300" fill="url(#dots)"/>
+  <rect width="1200" height="300" fill="url(#glow)"/>
+
+  <!-- Scan rings around the shield -->
+  <g fill="none" stroke="#c3d5ff">
+    <circle cx="960" cy="150" r="128" stroke-opacity="0.10" stroke-width="2"/>
+    <circle cx="960" cy="150" r="104" stroke-opacity="0.16" stroke-width="2" stroke-dasharray="4 10"/>
+    <path d="M960 22 A128 128 0 0 1 1084 118" stroke-opacity="0.75" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- Shield -->
+  <path d="M960 62 L1032 88 L1032 150 C1032 198 1000 228 960 244 C920 228 888 198 888 150 L888 88 Z"
+        fill="url(#shield)" stroke="#ffffff" stroke-opacity="0.85" stroke-width="3" stroke-linejoin="round"/>
+
+  <!-- Padlock -->
+  <g transform="translate(960 158)">
+    <path d="M-20 -14 V-28 A20 20 0 0 1 20 -28 V-14" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round"/>
+    <rect x="-32" y="-16" width="64" height="50" rx="10" fill="#ffffff"/>
+    <circle cx="0" cy="4" r="7" fill="#1d4bb0"/>
+    <rect x="-3" y="6" width="6" height="14" rx="3" fill="#1d4bb0"/>
+  </g>
+
+  <!-- Checklist to the left of the shield -->
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <g transform="translate(676 96)">
+      <path d="M0 8 L7 15 L20 0" fill="none" stroke="#9bdcb4" stroke-width="4"/>
+      <rect x="34" y="4" width="120" height="8" rx="4" fill="#ffffff" fill-opacity="0.55"/>
+    </g>
+    <g transform="translate(676 138)">
+      <path d="M0 8 L7 15 L20 0" fill="none" stroke="#9bdcb4" stroke-width="4"/>
+      <rect x="34" y="4" width="96" height="8" rx="4" fill="#ffffff" fill-opacity="0.45"/>
+    </g>
+    <g transform="translate(676 180)">
+      <path d="M2 2 L18 18 M18 2 L2 18" fill="none" stroke="#ffb4a8" stroke-width="4"/>
+      <rect x="34" y="6" width="108" height="8" rx="4" fill="#ffffff" fill-opacity="0.35"/>
+    </g>
+  </g>
+
+  <!-- Text -->
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#ffffff">
+    <text x="72" y="126" font-size="50" font-weight="700" letter-spacing="-1">macos-security-audit</text>
+    <text x="74" y="170" font-size="22" fill-opacity="0.84">Read-only posture audit for macOS, built for CI and fleets.</text>
+    <text x="74" y="230" font-size="14" font-weight="600" letter-spacing="2" fill-opacity="0.72" xml:space="preserve">35 CHECKS   <tspan fill="#9bbcff">&#183;</tspan>   JSON   <tspan fill="#9bbcff">&#183;</tspan>   MARKDOWN   <tspan fill="#9bbcff">&#183;</tspan>   SARIF   <tspan fill="#9bbcff">&#183;</tspan>   NO ROOT</text>
+  </g>
+</svg>
