@@ -1,0 +1,57 @@
+{
+  "area": "packages",
+  "cases": [
+    {
+      "check": "MA-PKG-01",
+      "expect": "pass",
+      "commands": {
+        "brew outdated --quiet": {
+          "stdout": "git\nopenssl@3\ncurl\n"
+        }
+      }
+    },
+    {
+      "check": "MA-PKG-01",
+      "expect": "pass",
+      "commands": {
+        "brew outdated --quiet": {
+          "stdout": ""
+        }
+      },
+      "name": "nothing outdated"
+    },
+    {
+      "check": "MA-PKG-01",
+      "expect": "fail",
+      "commands": {
+        "brew outdated --quiet": {
+          "stdout": "formula-00\nformula-01\nformula-02\nformula-03\nformula-04\nformula-05\nformula-06\nformula-07\nformula-08\nformula-09\nformula-10\nformula-11\n"
+        }
+      }
+    },
+    {
+      "check": "MA-PKG-01",
+      "expect": "unknown",
+      "commands": {
+        "brew outdated --quiet": {
+          "stdout": "",
+          "exit": 1,
+          "stderr": "Error: Permission denied\n"
+        }
+      }
+    },
+    {
+      "check": "MA-PKG-01",
+      "expect": "skipped",
+      "commands": {
+        "brew outdated --quiet": {
+          "stdout": ""
+        }
+      },
+      "missing_tools": [
+        "brew"
+      ],
+      "name": "brew not installed"
+    }
+  ]
+}

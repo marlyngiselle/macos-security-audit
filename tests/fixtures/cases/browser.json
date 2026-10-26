@@ -1,0 +1,63 @@
+{
+  "area": "browser",
+  "cases": [
+    {
+      "check": "MA-WEB-01",
+      "expect": "pass",
+      "commands": {
+        "defaults read com.apple.Safari AutoOpenSafeDownloads": {
+          "stdout": "0\n"
+        }
+      }
+    },
+    {
+      "check": "MA-WEB-01",
+      "expect": "fail",
+      "commands": {
+        "defaults read com.apple.Safari AutoOpenSafeDownloads": {
+          "stdout": "1\n"
+        }
+      }
+    },
+    {
+      "check": "MA-WEB-01",
+      "expect": "unknown",
+      "commands": {
+        "defaults read com.apple.Safari AutoOpenSafeDownloads": {
+          "exit": 1,
+          "stdout": "",
+          "stderr": "2026-10-26 09:00:00.000 defaults[4242:1337] \nThe domain/default pair of (/Users/sample/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari, AutoOpenSafeDownloads) does not exist\n"
+        }
+      }
+    },
+    {
+      "check": "MA-WEB-02",
+      "expect": "pass",
+      "commands": {
+        "defaults read com.apple.Safari WarnAboutFraudulentWebsites": {
+          "stdout": "1\n"
+        }
+      }
+    },
+    {
+      "check": "MA-WEB-02",
+      "expect": "fail",
+      "commands": {
+        "defaults read com.apple.Safari WarnAboutFraudulentWebsites": {
+          "stdout": "0\n"
+        }
+      }
+    },
+    {
+      "check": "MA-WEB-02",
+      "expect": "unknown",
+      "commands": {
+        "defaults read com.apple.Safari WarnAboutFraudulentWebsites": {
+          "exit": 1,
+          "stdout": "",
+          "stderr": "2026-10-26 09:00:00.000 defaults[4242:1337] \nThe domain/default pair of (/Users/sample/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari, WarnAboutFraudulentWebsites) does not exist\n"
+        }
+      }
+    }
+  ]
+}

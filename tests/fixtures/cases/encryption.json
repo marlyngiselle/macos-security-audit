@@ -1,0 +1,93 @@
+{
+  "area": "encryption",
+  "cases": [
+    {
+      "check": "MA-ENC-01",
+      "expect": "pass",
+      "commands": {
+        "fdesetup status": {
+          "stdout": "FileVault is On.\n"
+        }
+      }
+    },
+    {
+      "check": "MA-ENC-01",
+      "expect": "pass",
+      "commands": {
+        "fdesetup status": {
+          "stdout": "FileVault is On.\nEncryption in progress: Percent completed = 42.0\n"
+        }
+      },
+      "name": "encrypting"
+    },
+    {
+      "check": "MA-ENC-01",
+      "expect": "fail",
+      "commands": {
+        "fdesetup status": {
+          "stdout": "FileVault is Off.\n"
+        }
+      }
+    },
+    {
+      "check": "MA-ENC-01",
+      "expect": "fail",
+      "commands": {
+        "fdesetup status": {
+          "stdout": "FileVault is On.\nDecryption in progress: Percent completed = 10.0\n"
+        }
+      },
+      "name": "decrypting"
+    },
+    {
+      "check": "MA-ENC-01",
+      "expect": "unknown",
+      "commands": {
+        "fdesetup status": {
+          "stdout": "",
+          "exit": 1,
+          "stderr": "fdesetup: unexpected error\n"
+        }
+      }
+    },
+    {
+      "check": "MA-ENC-02",
+      "expect": "pass",
+      "commands": {
+        "defaults read /Library/Preferences/com.apple.TimeMachine Destinations": {
+          "stdout": "(\n        {\n        DestinationID = \"0000\";\n        LastKnownEncryptionState = Encrypted;\n    }\n)\n"
+        }
+      }
+    },
+    {
+      "check": "MA-ENC-02",
+      "expect": "fail",
+      "commands": {
+        "defaults read /Library/Preferences/com.apple.TimeMachine Destinations": {
+          "stdout": "(\n        {\n        LastKnownEncryptionState = Encrypted;\n    },\n        {\n        LastKnownEncryptionState = NotEncrypted;\n    }\n)\n"
+        }
+      }
+    },
+    {
+      "check": "MA-ENC-02",
+      "expect": "unknown",
+      "commands": {
+        "defaults read /Library/Preferences/com.apple.TimeMachine Destinations": {
+          "stdout": "(\n        {\n        DestinationID = \"0000\";\n    }\n)\n"
+        }
+      }
+    },
+    {
+      "check": "MA-ENC-02",
+      "expect": "skipped",
+      "commands": {
+        "defaults read /Library/Preferences/com.apple.TimeMachine Destinations": {
+          "exit": 1,
+          "stdout": "",
+          "stderr": "2026-10-26 09:00:00.000 defaults[4242:1337] \nThe domain/default pair of (/Library/Preferences/com.apple.TimeMachine, Destinations) does not exist\n"
+        }
+      },
+      "name": "no destination"
+    }
+  ]
+}

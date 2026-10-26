@@ -1,0 +1,153 @@
+{
+  "description": "A fictional MacBook used for documentation and demos. Not a real machine.",
+  "generated_at": "2026-10-26T09:00:00Z",
+  "host": {
+    "os_version": "15.5",
+    "build": "24F74",
+    "arch": "arm64"
+  },
+  "euid": 501,
+  "home": "/Users/sample",
+  "env": {
+    "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:~/bin"
+  },
+  "missing_tools": [],
+  "commands": {
+    "fdesetup status": {
+      "stdout": "FileVault is On.\n"
+    },
+    "defaults read /Library/Preferences/com.apple.TimeMachine Destinations": {
+      "stdout": "(\n        {\n        DestinationID = \"0000\";\n        LastKnownEncryptionState = Encrypted;\n    }\n)\n"
+    },
+    "/usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate": {
+      "stdout": "Firewall is enabled. (State = 1)\n"
+    },
+    "/usr/libexec/ApplicationFirewall/socketfilterfw --getstealthmode": {
+      "stdout": "Firewall stealth mode is off\n"
+    },
+    "/usr/libexec/ApplicationFirewall/socketfilterfw --getloggingmode": {
+      "stdout": "Log mode is on\n"
+    },
+    "spctl --status": {
+      "stdout": "assessments enabled\n"
+    },
+    "csrutil status": {
+      "stdout": "System Integrity Protection status: enabled.\n"
+    },
+    "csrutil authenticated-root status": {
+      "stdout": "Authenticated Root status: enabled\n"
+    },
+    "defaults read /Library/Apple/System/Library/CoreServices/XProtect.bundle/Contents/Info.plist CFBundleShortVersionString": {
+      "stdout": "5297\n"
+    },
+    "defaults read /Library/Preferences/com.apple.SoftwareUpdate AutomaticCheckEnabled": {
+      "stdout": "1\n"
+    },
+    "defaults read /Library/Preferences/com.apple.SoftwareUpdate ConfigDataInstall": {
+      "stdout": "1\n"
+    },
+    "defaults read /Library/Preferences/com.apple.SoftwareUpdate CriticalUpdateInstall": {
+      "stdout": "1\n"
+    },
+    "defaults read /Library/Preferences/com.apple.SoftwareUpdate AutomaticallyInstallMacOSUpdates": {
+      "stdout": "0\n"
+    },
+    "sysadminctl -screenLock status": {
+      "stdout": "",
+      "stderr": "2026-10-26 09:00:00.000 sysadminctl[4242:1337] screenLock delay is immediate\n"
+    },
+    "defaults -currentHost read com.apple.screensaver idleTime": {
+      "stdout": "600\n"
+    },
+    "defaults read /Library/Preferences/com.apple.loginwindow autoLoginUser": {
+      "exit": 1,
+      "stdout": "",
+      "stderr": "2026-10-26 09:00:00.000 defaults[4242:1337] \nThe domain/default pair of (/Library/Preferences/com.apple.loginwindow, autoLoginUser) does not exist\n"
+    },
+    "defaults read /Library/Preferences/com.apple.loginwindow GuestEnabled": {
+      "stdout": "0\n"
+    },
+    "launchctl print-disabled system": {
+      "stdout": "disabled services = {\n\t\"com.openssh.sshd\" => enabled\n\t\"com.apple.screensharing\" => disabled\n}\n"
+    },
+    "cupsctl": {
+      "stdout": "_debug_logging=0\n_remote_admin=0\n_remote_any=0\n_share_printers=0\n_user_cancel_any=0\n"
+    },
+    "defaults -currentHost read com.apple.Bluetooth PrefKeyServicesEnabled": {
+      "stdout": "0\n"
+    },
+    "defaults read com.apple.sharingd DiscoverableMode": {
+      "stdout": "Contacts Only\n"
+    },
+    "networksetup -listallhardwareports": {
+      "stdout": "\nHardware Port: Ethernet\nDevice: en1\nEthernet Address: 00:00:00:00:00:01\n\nHardware Port: Wi-Fi\nDevice: en0\nEthernet Address: 00:00:00:00:00:02\n"
+    },
+    "networksetup -listpreferredwirelessnetworks en0": {
+      "stdout": "Preferred networks on en0:\n\tNetwork-00\n\tNetwork-01\n\tNetwork-02\n\tNetwork-03\n\tNetwork-04\n\tNetwork-05\n\tNetwork-06\n\tNetwork-07\n\tNetwork-08\n\tNetwork-09\n\tNetwork-10\n\tNetwork-11\n\tNetwork-12\n\tNetwork-13\n\tNetwork-14\n\tNetwork-15\n\tNetwork-16\n\tNetwork-17\n\tNetwork-18\n\tNetwork-19\n\tNetwork-20\n\tNetwork-21\n\tNetwork-22\n\tNetwork-23\n\tNetwork-24\n\tNetwork-25\n\tNetwork-26\n\tNetwork-27\n\tNetwork-28\n\tNetwork-29\n\tNetwork-30\n\tNetwork-31\n\tNetwork-32\n\tNetwork-33\n\tNetwork-34\n\tNetwork-35\n\tNetwork-36\n\tNetwork-37\n\tNetwork-38\n\tNetwork-39\n\tNetwork-40\n\tNetwork-41\n"
+    },
+    "defaults read com.apple.Safari AutoOpenSafeDownloads": {
+      "exit": 1,
+      "stdout": "",
+      "stderr": "2026-10-26 09:00:00.000 defaults[4242:1337] \nThe domain/default pair of (/Users/sample/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari, AutoOpenSafeDownloads) does not exist\n"
+    },
+    "defaults read com.apple.Safari WarnAboutFraudulentWebsites": {
+      "stdout": "1\n"
+    },
+    "defaults read MobileMeAccounts Accounts": {
+      "stdout": "(\n        {\n        AccountDescription = iCloud;\n        AccountID = \"person@example.com\";\n        Services = (\n                        {\n                Enabled = 1;\n                Name = \"KEYCHAIN_SYNC\";\n                ServiceID = \"com.apple.Dataclass.KeychainSync\";\n            }\n        );\n    }\n)\n"
+    },
+    "brew outdated --quiet": {
+      "stdout": "formula-00\nformula-01\nformula-02\nformula-03\nformula-04\nformula-05\nformula-06\nformula-07\nformula-08\nformula-09\nformula-10\nformula-11\nformula-12\nformula-13\n"
+    }
+  },
+  "files": {
+    "/opt/homebrew/bin": {
+      "type": "dir",
+      "mode": "0755"
+    },
+    "/usr/local/bin": {
+      "type": "dir",
+      "mode": "0755"
+    },
+    "/usr/bin": {
+      "type": "dir",
+      "mode": "0755"
+    },
+    "/bin": {
+      "type": "dir",
+      "mode": "0755"
+    },
+    "/usr/sbin": {
+      "type": "dir",
+      "mode": "0755"
+    },
+    "/sbin": {
+      "type": "dir",
+      "mode": "0755"
+    },
+    "~/bin": {
+      "type": "dir",
+      "mode": "0700"
+    },
+    "~/.ssh": {
+      "type": "dir",
+      "mode": "0700"
+    },
+    "~/.ssh/id_ed25519": {
+      "mode": "0600",
+      "content_b64": "LS0tLS1CRUdJTiBPUEVOU1NIIFBSSVZBVEUgS0VZLS0tLS0KYjNCbGJuTnphQzFyWlhrdGRqRUFBQUFBQkc1dmJtVUFBQUFFYm05dVpRQUFBQUFBQUFBQkFBQUFJM041Ym5Sb1pYUnBZeQoxd2RXSnNhV010YTJWNUxXSnNiMkl0Wm05eUxYUmxjM1J6QUFBQWVITjViblJvWlhScFl5MXdjbWwyWVhSbExYTmxZM1JwCmIyNHRibTkwTFdFdGNtVmhiQzFyWlhsemVXNTBhR1YwYVdNdGNISnBkbUYwWlMxelpXTjBhVzl1TFc1dmRDMWhMWEpsWVcKd3RhMlY1YzNsdWRHaGxkR2xqTFhCeWFYWmhkR1V0YzJWamRHbHZiaTF1YjNRdFlTMXlaV0ZzTFd0bGVRPT0KLS0tLS1FTkQgT1BFTlNTSCBQUklWQVRFIEtFWS0tLS0tCg=="
+    },
+    "~/.ssh/id_ed25519.pub": {
+      "mode": "0644",
+      "content": "ssh-ed25519 AAAA sample"
+    },
+    "~/.ssh/config": {
+      "mode": "0600",
+      "content": "Host *\n  AddKeysToAgent yes\n\nHost lab-*\n  StrictHostKeyChecking no\n"
+    },
+    "~/.zsh_history": {
+      "mode": "0644",
+      "content": ""
+    }
+  }
+}

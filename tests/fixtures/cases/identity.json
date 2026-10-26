@@ -1,0 +1,44 @@
+{
+  "area": "identity",
+  "cases": [
+    {
+      "check": "MA-ID-01",
+      "expect": "pass",
+      "commands": {
+        "defaults read MobileMeAccounts Accounts": {
+          "stdout": "(\n        {\n        AccountDescription = iCloud;\n        AccountID = \"person@example.com\";\n        Services = (\n                        {\n                Enabled = 1;\n                Name = \"KEYCHAIN_SYNC\";\n                ServiceID = \"com.apple.Dataclass.KeychainSync\";\n            }\n        );\n    }\n)\n"
+        }
+      }
+    },
+    {
+      "check": "MA-ID-01",
+      "expect": "fail",
+      "commands": {
+        "defaults read MobileMeAccounts Accounts": {
+          "stdout": "(\n        {\n        AccountDescription = iCloud;\n        AccountID = \"person@example.com\";\n        Services = (\n                        {\n                Enabled = 0;\n                Name = \"KEYCHAIN_SYNC\";\n                ServiceID = \"com.apple.Dataclass.KeychainSync\";\n            }\n        );\n    }\n)\n"
+        }
+      }
+    },
+    {
+      "check": "MA-ID-01",
+      "expect": "fail",
+      "commands": {
+        "defaults read MobileMeAccounts Accounts": {
+          "exit": 1,
+          "stdout": "",
+          "stderr": "2026-10-26 09:00:00.000 defaults[4242:1337] \nThe domain/default pair of (MobileMeAccounts, Accounts) does not exist\n"
+        }
+      },
+      "name": "no account"
+    },
+    {
+      "check": "MA-ID-01",
+      "expect": "unknown",
+      "commands": {
+        "defaults read MobileMeAccounts Accounts": {
+          "stdout": "(\n)\n"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "area": "shell",
+  "cases": [
+    {
+      "check": "MA-SHL-01",
+      "expect": "pass",
+      "files": {
+        "~/.zsh_history": {
+          "mode": "0600",
+          "content": ""
+        }
+      }
+    },
+    {
+      "check": "MA-SHL-01",
+      "expect": "fail",
+      "files": {
+        "~/.zsh_history": {
+          "mode": "0600",
+          "content": ""
+        },
+        "~/.bash_history": {
+          "mode": "0644",
+          "content": ""
+        }
+      }
+    },
+    {
+      "check": "MA-SHL-01",
+      "expect": "unknown",
+      "files": {
+        "~/.zsh_history": {
+          "type": "symlink",
+          "target": "/Volumes/Shared/history"
+        }
+      }
+    },
+    {
+      "check": "MA-SHL-01",
+      "expect": "skipped",
+      "name": "no history"
+    },
+    {
+      "check": "MA-SHL-02",
+      "expect": "pass",
+      "env": {
+        "PATH": "/usr/bin:/bin:~/bin"
+      },
+      "files": {
+        "/usr/bin": {
+          "type": "dir"
+        },
+        "/bin": {
+          "type": "dir"
+        },
+        "~/bin": {
+          "type": "dir",
+          "mode": "0700"
+        }
+      }
+    },
+    {
+      "check": "MA-SHL-02",
+      "expect": "fail",
+      "env": {
+        "PATH": "/usr/bin:/opt/shared/bin"
+      },
+      "files": {
+        "/usr/bin": {
+          "type": "dir"
+        },
+        "/opt/shared/bin": {
+          "type": "dir",
+          "mode": "0777"
+        }
+      }
+    },
+    {
+      "check": "MA-SHL-02",
+      "expect": "fail",
+      "env": {
+        "PATH": "/usr/bin:.:"
+      },
+      "files": {
+        "/usr/bin": {
+          "type": "dir"
+        }
+      },
+      "name": "relative entry"
+    },
+    {
+      "check": "MA-SHL-02",
+      "expect": "unknown",
+      "env": {
+        "PATH": ""
+      }
+    }
+  ]
+}

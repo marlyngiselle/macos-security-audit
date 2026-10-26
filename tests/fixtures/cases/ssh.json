@@ -1,0 +1,220 @@
+{
+  "area": "ssh",
+  "cases": [
+    {
+      "check": "MA-SSH-01",
+      "expect": "pass",
+      "files": {
+        "~/.ssh": {
+          "type": "dir",
+          "mode": "0700"
+        },
+        "~/.ssh/id_ed25519": {
+          "mode": "0600",
+          "content_b64": "LS0tLS1CRUdJTiBPUEVOU1NIIFBSSVZBVEUgS0VZLS0tLS0KYjNCbGJuTnphQzFyWlhrdGRqRUFBQUFBQ21GbGN6STFOaTFqZEhJQUFBQUdZbU55ZVhCMEFBQUFHQUFBQUFBQUFBQUFBQQpBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFFQUFBQWpjM2x1ZEdobGRHbGpMWEIxWW14cFl5MXJaWGt0WW14dllpMW1iM0l0CmRHVnpkSE1BQUFCNGMzbHVkR2hsZEdsakxYQnlhWFpoZEdVdGMyVmpkR2x2YmkxdWIzUXRZUzF5WldGc0xXdGxlWE41Ym4KUm9aWFJwWXkxd2NtbDJZWFJsTFhObFkzUnBiMjR0Ym05MExXRXRjbVZoYkMxclpYbHplVzUwYUdWMGFXTXRjSEpwZG1GMApaUzF6WldOMGFXOXVMVzV2ZEMxaExYSmxZV3d0YTJWNQotLS0tLUVORCBPUEVOU1NIIFBSSVZBVEUgS0VZLS0tLS0K"
+        },
+        "~/.ssh/id_ed25519.pub": {
+          "mode": "0644",
+          "content": "ssh-ed25519 AAAA test"
+        },
+        "~/.ssh/authorized_keys": {
+          "mode": "0644",
+          "content": ""
+        }
+      }
+    },
+    {
+      "check": "MA-SSH-01",
+      "expect": "fail",
+      "files": {
+        "~/.ssh": {
+          "type": "dir",
+          "mode": "0700"
+        },
+        "~/.ssh/id_ed25519": {
+          "mode": "0644",
+          "content_b64": "LS0tLS1CRUdJTiBPUEVOU1NIIFBSSVZBVEUgS0VZLS0tLS0KYjNCbGJuTnphQzFyWlhrdGRqRUFBQUFBQ21GbGN6STFOaTFqZEhJQUFBQUdZbU55ZVhCMEFBQUFHQUFBQUFBQUFBQUFBQQpBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFFQUFBQWpjM2x1ZEdobGRHbGpMWEIxWW14cFl5MXJaWGt0WW14dllpMW1iM0l0CmRHVnpkSE1BQUFCNGMzbHVkR2hsZEdsakxYQnlhWFpoZEdVdGMyVmpkR2x2YmkxdWIzUXRZUzF5WldGc0xXdGxlWE41Ym4KUm9aWFJwWXkxd2NtbDJZWFJsTFhObFkzUnBiMjR0Ym05MExXRXRjbVZoYkMxclpYbHplVzUwYUdWMGFXTXRjSEpwZG1GMApaUzF6WldOMGFXOXVMVzV2ZEMxaExYSmxZV3d0YTJWNQotLS0tLUVORCBPUEVOU1NIIFBSSVZBVEUgS0VZLS0tLS0K"
+        }
+      }
+    },
+    {
+      "check": "MA-SSH-01",
+      "expect": "fail",
+      "files": {
+        "~/.ssh": {
+          "type": "dir",
+          "mode": "0755"
+        }
+      },
+      "name": "open directory"
+    },
+    {
+      "check": "MA-SSH-01",
+      "expect": "fail",
+      "files": {
+        "~/.ssh": {
+          "type": "dir",
+          "mode": "0700"
+        },
+        "~/.ssh/authorized_keys": {
+          "mode": "0666",
+          "content": ""
+        }
+      },
+      "name": "writable authorized_keys"
+    },
+    {
+      "check": "MA-SSH-01",
+      "expect": "unknown",
+      "files": {
+        "~/.ssh": {
+          "type": "file",
+          "mode": "0600",
+          "content": ""
+        }
+      }
+    },
+    {
+      "check": "MA-SSH-01",
+      "expect": "skipped",
+      "name": "no ssh directory"
+    },
+    {
+      "check": "MA-SSH-02",
+      "expect": "pass",
+      "files": {
+        "~/.ssh/config": {
+          "mode": "0600",
+          "content": "Host *\n  AddKeysToAgent yes\n  UseKeychain yes\n\nHost bastion.example.com\n  ForwardAgent yes\n"
+        }
+      }
+    },
+    {
+      "check": "MA-SSH-02",
+      "expect": "fail",
+      "files": {
+        "~/.ssh/config": {
+          "mode": "0600",
+          "content": "Host *\n  StrictHostKeyChecking no\n  UserKnownHostsFile /dev/null\n"
+        }
+      }
+    },
+    {
+      "check": "MA-SSH-02",
+      "expect": "fail",
+      "files": {
+        "~/.ssh/config": {
+          "mode": "0600",
+          "content": "ForwardAgent yes\n\nHost git.example.com\n  User git\n"
+        }
+      },
+      "name": "global agent forwarding"
+    },
+    {
+      "check": "MA-SSH-02",
+      "expect": "unknown",
+      "files": {
+        "~/.ssh/config": {
+          "type": "dir"
+        }
+      }
+    },
+    {
+      "check": "MA-SSH-02",
+      "expect": "unknown",
+      "files": {
+        "~/.ssh/config": {
+          "mode": "0600",
+          "content_b64": "SG9zdCAqCv/+Cg=="
+        }
+      },
+      "name": "not utf-8"
+    },
+    {
+      "check": "MA-SSH-02",
+      "expect": "skipped",
+      "name": "no config"
+    },
+    {
+      "check": "MA-SSH-03",
+      "expect": "pass",
+      "files": {
+        "~/.ssh": {
+          "type": "dir",
+          "mode": "0700"
+        },
+        "~/.ssh/id_ed25519": {
+          "mode": "0600",
+          "content_b64": "LS0tLS1CRUdJTiBPUEVOU1NIIFBSSVZBVEUgS0VZLS0tLS0KYjNCbGJuTnphQzFyWlhrdGRqRUFBQUFBQ21GbGN6STFOaTFqZEhJQUFBQUdZbU55ZVhCMEFBQUFHQUFBQUFBQUFBQUFBQQpBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFFQUFBQWpjM2x1ZEdobGRHbGpMWEIxWW14cFl5MXJaWGt0WW14dllpMW1iM0l0CmRHVnpkSE1BQUFCNGMzbHVkR2hsZEdsakxYQnlhWFpoZEdVdGMyVmpkR2x2YmkxdWIzUXRZUzF5WldGc0xXdGxlWE41Ym4KUm9aWFJwWXkxd2NtbDJZWFJsTFhObFkzUnBiMjR0Ym05MExXRXRjbVZoYkMxclpYbHplVzUwYUdWMGFXTXRjSEpwZG1GMApaUzF6WldOMGFXOXVMVzV2ZEMxaExYSmxZV3d0YTJWNQotLS0tLUVORCBPUEVOU1NIIFBSSVZBVEUgS0VZLS0tLS0K"
+        },
+        "~/.ssh/legacy_rsa": {
+          "mode": "0600",
+          "content_b64": "LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpQcm9jLVR5cGU6IDQsRU5DUllQVEVECkRFSy1JbmZvOiBBRVMtMTI4LUNCQywwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMAoKYzNsdWRHaGxkR2xqTFhSbGMzUXRaR0YwWVE9PQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo="
+        }
+      }
+    },
+    {
+      "check": "MA-SSH-03",
+      "expect": "pass",
+      "files": {
+        "~/.ssh": {
+          "type": "dir",
+          "mode": "0700"
+        },
+        "~/.ssh/known_hosts": {
+          "mode": "0644",
+          "content": "example.com ssh-ed25519 AAAA\n"
+        }
+      },
+      "name": "no keys"
+    },
+    {
+      "check": "MA-SSH-03",
+      "expect": "fail",
+      "files": {
+        "~/.ssh": {
+          "type": "dir",
+          "mode": "0700"
+        },
+        "~/.ssh/id_ed25519": {
+          "mode": "0600",
+          "content_b64": "LS0tLS1CRUdJTiBPUEVOU1NIIFBSSVZBVEUgS0VZLS0tLS0KYjNCbGJuTnphQzFyWlhrdGRqRUFBQUFBQkc1dmJtVUFBQUFFYm05dVpRQUFBQUFBQUFBQkFBQUFJM041Ym5Sb1pYUnBZeQoxd2RXSnNhV010YTJWNUxXSnNiMkl0Wm05eUxYUmxjM1J6QUFBQWVITjViblJvWlhScFl5MXdjbWwyWVhSbExYTmxZM1JwCmIyNHRibTkwTFdFdGNtVmhiQzFyWlhsemVXNTBhR1YwYVdNdGNISnBkbUYwWlMxelpXTjBhVzl1TFc1dmRDMWhMWEpsWVcKd3RhMlY1YzNsdWRHaGxkR2xqTFhCeWFYWmhkR1V0YzJWamRHbHZiaTF1YjNRdFlTMXlaV0ZzTFd0bGVRPT0KLS0tLS1FTkQgT1BFTlNTSCBQUklWQVRFIEtFWS0tLS0tCg=="
+        }
+      }
+    },
+    {
+      "check": "MA-SSH-03",
+      "expect": "fail",
+      "files": {
+        "~/.ssh": {
+          "type": "dir",
+          "mode": "0700"
+        },
+        "~/.ssh/legacy_rsa": {
+          "mode": "0600",
+          "content_b64": "LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpjM2x1ZEdobGRHbGpMWFJsYzNRdFpHRjBZUT09Ci0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg=="
+        }
+      },
+      "name": "legacy pem"
+    },
+    {
+      "check": "MA-SSH-03",
+      "expect": "unknown",
+      "files": {
+        "~/.ssh": {
+          "type": "dir",
+          "mode": "0700"
+        },
+        "~/.ssh/id_broken": {
+          "mode": "0600",
+          "content_b64": "LS0tLS1CRUdJTiBPUEVOU1NIIFBSSVZBVEUgS0VZLS0tLS0KISFub3QgYmFzZTY0ISEKLS0tLS1FTkQgT1BFTlNTSCBQUklWQVRFIEtFWS0tLS0tCg=="
+        }
+      }
+    },
+    {
+      "check": "MA-SSH-03",
+      "expect": "skipped",
+      "name": "no ssh directory"
+    }
+  ]
+}

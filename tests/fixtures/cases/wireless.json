@@ -1,0 +1,145 @@
+{
+  "area": "wireless",
+  "cases": [
+    {
+      "check": "MA-WL-01",
+      "expect": "pass",
+      "commands": {
+        "defaults -currentHost read com.apple.Bluetooth PrefKeyServicesEnabled": {
+          "stdout": "0\n"
+        }
+      }
+    },
+    {
+      "check": "MA-WL-01",
+      "expect": "pass",
+      "commands": {
+        "defaults -currentHost read com.apple.Bluetooth PrefKeyServicesEnabled": {
+          "exit": 1,
+          "stdout": "",
+          "stderr": "2026-10-26 09:00:00.000 defaults[4242:1337] \nThe domain/default pair of (com.apple.Bluetooth, PrefKeyServicesEnabled) does not exist\n"
+        }
+      },
+      "name": "not set"
+    },
+    {
+      "check": "MA-WL-01",
+      "expect": "fail",
+      "commands": {
+        "defaults -currentHost read com.apple.Bluetooth PrefKeyServicesEnabled": {
+          "stdout": "1\n"
+        }
+      }
+    },
+    {
+      "check": "MA-WL-01",
+      "expect": "unknown",
+      "commands": {
+        "defaults -currentHost read com.apple.Bluetooth PrefKeyServicesEnabled": {
+          "stdout": "",
+          "exit": 1,
+          "stderr": "Could not open domain\n"
+        }
+      }
+    },
+    {
+      "check": "MA-WL-02",
+      "expect": "pass",
+      "commands": {
+        "defaults read com.apple.sharingd DiscoverableMode": {
+          "stdout": "Contacts Only\n"
+        }
+      }
+    },
+    {
+      "check": "MA-WL-02",
+      "expect": "pass",
+      "commands": {
+        "defaults read com.apple.sharingd DiscoverableMode": {
+          "exit": 1,
+          "stdout": "",
+          "stderr": "2026-10-26 09:00:00.000 defaults[4242:1337] \nThe domain/default pair of (com.apple.sharingd, DiscoverableMode) does not exist\n"
+        }
+      },
+      "name": "not set"
+    },
+    {
+      "check": "MA-WL-02",
+      "expect": "fail",
+      "commands": {
+        "defaults read com.apple.sharingd DiscoverableMode": {
+          "stdout": "Everyone\n"
+        }
+      }
+    },
+    {
+      "check": "MA-WL-02",
+      "expect": "unknown",
+      "commands": {
+        "defaults read com.apple.sharingd DiscoverableMode": {
+          "stdout": "",
+          "exit": 1,
+          "stderr": "Could not open domain\n"
+        }
+      }
+    },
+    {
+      "check": "MA-WL-03",
+      "expect": "pass",
+      "commands": {
+        "networksetup -listallhardwareports": {
+          "stdout": "\nHardware Port: Ethernet\nDevice: en1\nEthernet Address: 00:00:00:00:00:01\n\nHardware Port: Wi-Fi\nDevice: en0\nEthernet Address: 00:00:00:00:00:02\n"
+        },
+        "networksetup -listpreferredwirelessnetworks en0": {
+          "stdout": "Preferred networks on en0:\n\tNetwork-00\n\tNetwork-01\n\tNetwork-02\n\tNetwork-03\n\tNetwork-04\n\tNetwork-05\n\tNetwork-06\n\tNetwork-07\n\tNetwork-08\n\tNetwork-09\n\tNetwork-10\n\tNetwork-11\n"
+        }
+      }
+    },
+    {
+      "check": "MA-WL-03",
+      "expect": "fail",
+      "commands": {
+        "networksetup -listallhardwareports": {
+          "stdout": "\nHardware Port: Ethernet\nDevice: en1\nEthernet Address: 00:00:00:00:00:01\n\nHardware Port: Wi-Fi\nDevice: en0\nEthernet Address: 00:00:00:00:00:02\n"
+        },
+        "networksetup -listpreferredwirelessnetworks en0": {
+          "stdout": "Preferred networks on en0:\n\tNetwork-00\n\tNetwork-01\n\tNetwork-02\n\tNetwork-03\n\tNetwork-04\n\tNetwork-05\n\tNetwork-06\n\tNetwork-07\n\tNetwork-08\n\tNetwork-09\n\tNetwork-10\n\tNetwork-11\n\tNetwork-12\n\tNetwork-13\n\tNetwork-14\n\tNetwork-15\n\tNetwork-16\n\tNetwork-17\n\tNetwork-18\n\tNetwork-19\n\tNetwork-20\n\tNetwork-21\n\tNetwork-22\n\tNetwork-23\n\tNetwork-24\n\tNetwork-25\n\tNetwork-26\n\tNetwork-27\n\tNetwork-28\n\tNetwork-29\n\tNetwork-30\n"
+        }
+      }
+    },
+    {
+      "check": "MA-WL-03",
+      "expect": "unknown",
+      "commands": {
+        "networksetup -listallhardwareports": {
+          "stdout": "",
+          "exit": 1,
+          "stderr": "** Error: unexpected\n"
+        }
+      }
+    },
+    {
+      "check": "MA-WL-03",
+      "expect": "unknown",
+      "commands": {
+        "networksetup -listallhardwareports": {
+          "stdout": "\nHardware Port: Ethernet\nDevice: en1\nEthernet Address: 00:00:00:00:00:01\n\nHardware Port: Wi-Fi\nDevice: en0\nEthernet Address: 00:00:00:00:00:02\n"
+        },
+        "networksetup -listpreferredwirelessnetworks en0": {
+          "stdout": "Error obtaining wireless information.\n"
+        }
+      },
+      "name": "unexpected listing"
+    },
+    {
+      "check": "MA-WL-03",
+      "expect": "skipped",
+      "commands": {
+        "networksetup -listallhardwareports": {
+          "stdout": "\nHardware Port: Ethernet\nDevice: en1\nEthernet Address: 00:00:00:00:00:01\n"
+        }
+      },
+      "name": "no wifi"
+    }
+  ]
+}

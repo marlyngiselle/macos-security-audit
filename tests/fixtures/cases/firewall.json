@@ -1,0 +1,106 @@
+{
+  "area": "firewall",
+  "cases": [
+    {
+      "check": "MA-FW-01",
+      "expect": "pass",
+      "commands": {
+        "/usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate": {
+          "stdout": "Firewall is enabled. (State = 1)\n"
+        }
+      }
+    },
+    {
+      "check": "MA-FW-01",
+      "expect": "pass",
+      "commands": {
+        "/usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate": {
+          "stdout": "Firewall is blocking all non-essential incoming connections. (State = 2)\n"
+        }
+      },
+      "name": "block all"
+    },
+    {
+      "check": "MA-FW-01",
+      "expect": "fail",
+      "commands": {
+        "/usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate": {
+          "stdout": "Firewall is disabled. (State = 0)\n"
+        }
+      }
+    },
+    {
+      "check": "MA-FW-01",
+      "expect": "unknown",
+      "commands": {
+        "/usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate": {
+          "stdout": "Firewall settings cannot be modified from command line on managed Mac computers.\n"
+        }
+      }
+    },
+    {
+      "check": "MA-FW-02",
+      "expect": "pass",
+      "commands": {
+        "/usr/libexec/ApplicationFirewall/socketfilterfw --getstealthmode": {
+          "stdout": "Firewall stealth mode is on\n"
+        }
+      }
+    },
+    {
+      "check": "MA-FW-02",
+      "expect": "pass",
+      "commands": {
+        "/usr/libexec/ApplicationFirewall/socketfilterfw --getstealthmode": {
+          "stdout": "Stealth mode enabled\n"
+        }
+      },
+      "name": "older wording"
+    },
+    {
+      "check": "MA-FW-02",
+      "expect": "fail",
+      "commands": {
+        "/usr/libexec/ApplicationFirewall/socketfilterfw --getstealthmode": {
+          "stdout": "Firewall stealth mode is off\n"
+        }
+      }
+    },
+    {
+      "check": "MA-FW-02",
+      "expect": "unknown",
+      "commands": {
+        "/usr/libexec/ApplicationFirewall/socketfilterfw --getstealthmode": {
+          "stdout": "Firewall settings cannot be modified from command line on managed Mac computers.\n"
+        }
+      }
+    },
+    {
+      "check": "MA-FW-03",
+      "expect": "pass",
+      "commands": {
+        "/usr/libexec/ApplicationFirewall/socketfilterfw --getloggingmode": {
+          "stdout": "Log mode is on\n"
+        }
+      }
+    },
+    {
+      "check": "MA-FW-03",
+      "expect": "fail",
+      "commands": {
+        "/usr/libexec/ApplicationFirewall/socketfilterfw --getloggingmode": {
+          "stdout": "Log mode is off\n"
+        }
+      }
+    },
+    {
+      "check": "MA-FW-03",
+      "expect": "unknown",
+      "commands": {
+        "/usr/libexec/ApplicationFirewall/socketfilterfw --getloggingmode": {
+          "stdout": "Firewall settings cannot be modified from command line on managed Mac computers.\n"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,121 @@
+{
+  "area": "updates",
+  "cases": [
+    {
+      "check": "MA-UPD-01",
+      "expect": "pass",
+      "commands": {
+        "defaults read /Library/Preferences/com.apple.SoftwareUpdate AutomaticCheckEnabled": {
+          "stdout": "1\n"
+        }
+      }
+    },
+    {
+      "check": "MA-UPD-01",
+      "expect": "fail",
+      "commands": {
+        "defaults read /Library/Preferences/com.apple.SoftwareUpdate AutomaticCheckEnabled": {
+          "stdout": "0\n"
+        }
+      }
+    },
+    {
+      "check": "MA-UPD-01",
+      "expect": "unknown",
+      "commands": {
+        "defaults read /Library/Preferences/com.apple.SoftwareUpdate AutomaticCheckEnabled": {
+          "exit": 1,
+          "stdout": "",
+          "stderr": "2026-10-26 09:00:00.000 defaults[4242:1337] \nThe domain/default pair of (/Library/Preferences/com.apple.SoftwareUpdate, AutomaticCheckEnabled) does not exist\n"
+        }
+      }
+    },
+    {
+      "check": "MA-UPD-02",
+      "expect": "pass",
+      "commands": {
+        "defaults read /Library/Preferences/com.apple.SoftwareUpdate ConfigDataInstall": {
+          "stdout": "1\n"
+        }
+      }
+    },
+    {
+      "check": "MA-UPD-02",
+      "expect": "fail",
+      "commands": {
+        "defaults read /Library/Preferences/com.apple.SoftwareUpdate ConfigDataInstall": {
+          "stdout": "0\n"
+        }
+      }
+    },
+    {
+      "check": "MA-UPD-02",
+      "expect": "unknown",
+      "commands": {
+        "defaults read /Library/Preferences/com.apple.SoftwareUpdate ConfigDataInstall": {
+          "exit": 1,
+          "stdout": "",
+          "stderr": "2026-10-26 09:00:00.000 defaults[4242:1337] \nThe domain/default pair of (/Library/Preferences/com.apple.SoftwareUpdate, ConfigDataInstall) does not exist\n"
+        }
+      }
+    },
+    {
+      "check": "MA-UPD-03",
+      "expect": "pass",
+      "commands": {
+        "defaults read /Library/Preferences/com.apple.SoftwareUpdate CriticalUpdateInstall": {
+          "stdout": "1\n"
+        }
+      }
+    },
+    {
+      "check": "MA-UPD-03",
+      "expect": "fail",
+      "commands": {
+        "defaults read /Library/Preferences/com.apple.SoftwareUpdate CriticalUpdateInstall": {
+          "stdout": "0\n"
+        }
+      }
+    },
+    {
+      "check": "MA-UPD-03",
+      "expect": "unknown",
+      "commands": {
+        "defaults read /Library/Preferences/com.apple.SoftwareUpdate CriticalUpdateInstall": {
+          "exit": 1,
+          "stdout": "",
+          "stderr": "2026-10-26 09:00:00.000 defaults[4242:1337] \nThe domain/default pair of (/Library/Preferences/com.apple.SoftwareUpdate, CriticalUpdateInstall) does not exist\n"
+        }
+      }
+    },
+    {
+      "check": "MA-UPD-04",
+      "expect": "pass",
+      "commands": {
+        "defaults read /Library/Preferences/com.apple.SoftwareUpdate AutomaticallyInstallMacOSUpdates": {
+          "stdout": "1\n"
+        }
+      }
+    },
+    {
+      "check": "MA-UPD-04",
+      "expect": "fail",
+      "commands": {
+        "defaults read /Library/Preferences/com.apple.SoftwareUpdate AutomaticallyInstallMacOSUpdates": {
+          "stdout": "0\n"
+        }
+      }
+    },
+    {
+      "check": "MA-UPD-04",
+      "expect": "unknown",
+      "commands": {
+        "defaults read /Library/Preferences/com.apple.SoftwareUpdate AutomaticallyInstallMacOSUpdates": {
+          "exit": 1,
+          "stdout": "",
+          "stderr": "2026-10-26 09:00:00.000 defaults[4242:1337] \nThe domain/default pair of (/Library/Preferences/com.apple.SoftwareUpdate, AutomaticallyInstallMacOSUpdates) does not exist\n"
+        }
+      }
+    }
+  ]
+}

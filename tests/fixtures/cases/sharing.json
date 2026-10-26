@@ -1,0 +1,253 @@
+{
+  "area": "sharing",
+  "cases": [
+    {
+      "check": "MA-SHR-01",
+      "expect": "pass",
+      "commands": {
+        "launchctl print-disabled system": {
+          "stdout": "disabled services = {\n\t\"com.openssh.sshd\" => disabled\n\t\"com.apple.example\" => enabled\n}\n"
+        }
+      }
+    },
+    {
+      "check": "MA-SHR-01",
+      "expect": "pass",
+      "commands": {
+        "launchctl print-disabled system": {
+          "stdout": "disabled services = {\n\t\"com.apple.example\" => enabled\n}\n"
+        }
+      },
+      "name": "not overridden"
+    },
+    {
+      "check": "MA-SHR-01",
+      "expect": "pass",
+      "commands": {
+        "launchctl print-disabled system": {
+          "stdout": "disabled services = {\n\t\"com.openssh.sshd\" => true\n}\n"
+        }
+      },
+      "name": "older wording"
+    },
+    {
+      "check": "MA-SHR-01",
+      "expect": "fail",
+      "commands": {
+        "launchctl print-disabled system": {
+          "stdout": "disabled services = {\n\t\"com.openssh.sshd\" => enabled\n}\n"
+        }
+      }
+    },
+    {
+      "check": "MA-SHR-01",
+      "expect": "fail",
+      "commands": {
+        "launchctl print-disabled system": {
+          "stdout": "disabled services = {\n\t\"com.openssh.sshd\" => false\n}\n"
+        }
+      },
+      "name": "older wording enabled"
+    },
+    {
+      "check": "MA-SHR-01",
+      "expect": "unknown",
+      "commands": {
+        "launchctl print-disabled system": {
+          "stdout": "",
+          "exit": 1,
+          "stderr": "Unrecognized target specifier.\n"
+        }
+      }
+    },
+    {
+      "check": "MA-SHR-02",
+      "expect": "pass",
+      "commands": {
+        "launchctl print-disabled system": {
+          "stdout": "disabled services = {\n\t\"com.apple.screensharing\" => disabled\n\t\"com.apple.example\" => enabled\n}\n"
+        }
+      }
+    },
+    {
+      "check": "MA-SHR-02",
+      "expect": "pass",
+      "commands": {
+        "launchctl print-disabled system": {
+          "stdout": "disabled services = {\n\t\"com.apple.example\" => enabled\n}\n"
+        }
+      },
+      "name": "not overridden"
+    },
+    {
+      "check": "MA-SHR-02",
+      "expect": "pass",
+      "commands": {
+        "launchctl print-disabled system": {
+          "stdout": "disabled services = {\n\t\"com.apple.screensharing\" => true\n}\n"
+        }
+      },
+      "name": "older wording"
+    },
+    {
+      "check": "MA-SHR-02",
+      "expect": "fail",
+      "commands": {
+        "launchctl print-disabled system": {
+          "stdout": "disabled services = {\n\t\"com.apple.screensharing\" => enabled\n}\n"
+        }
+      }
+    },
+    {
+      "check": "MA-SHR-02",
+      "expect": "fail",
+      "commands": {
+        "launchctl print-disabled system": {
+          "stdout": "disabled services = {\n\t\"com.apple.screensharing\" => false\n}\n"
+        }
+      },
+      "name": "older wording enabled"
+    },
+    {
+      "check": "MA-SHR-02",
+      "expect": "unknown",
+      "commands": {
+        "launchctl print-disabled system": {
+          "stdout": "",
+          "exit": 1,
+          "stderr": "Unrecognized target specifier.\n"
+        }
+      }
+    },
+    {
+      "check": "MA-SHR-03",
+      "expect": "pass",
+      "commands": {
+        "launchctl print-disabled system": {
+          "stdout": "disabled services = {\n\t\"com.apple.smbd\" => disabled\n\t\"com.apple.example\" => enabled\n}\n"
+        }
+      }
+    },
+    {
+      "check": "MA-SHR-03",
+      "expect": "pass",
+      "commands": {
+        "launchctl print-disabled system": {
+          "stdout": "disabled services = {\n\t\"com.apple.example\" => enabled\n}\n"
+        }
+      },
+      "name": "not overridden"
+    },
+    {
+      "check": "MA-SHR-03",
+      "expect": "pass",
+      "commands": {
+        "launchctl print-disabled system": {
+          "stdout": "disabled services = {\n\t\"com.apple.smbd\" => true\n}\n"
+        }
+      },
+      "name": "older wording"
+    },
+    {
+      "check": "MA-SHR-03",
+      "expect": "fail",
+      "commands": {
+        "launchctl print-disabled system": {
+          "stdout": "disabled services = {\n\t\"com.apple.smbd\" => enabled\n}\n"
+        }
+      }
+    },
+    {
+      "check": "MA-SHR-03",
+      "expect": "fail",
+      "commands": {
+        "launchctl print-disabled system": {
+          "stdout": "disabled services = {\n\t\"com.apple.smbd\" => false\n}\n"
+        }
+      },
+      "name": "older wording enabled"
+    },
+    {
+      "check": "MA-SHR-03",
+      "expect": "unknown",
+      "commands": {
+        "launchctl print-disabled system": {
+          "stdout": "",
+          "exit": 1,
+          "stderr": "Unrecognized target specifier.\n"
+        }
+      }
+    },
+    {
+      "check": "MA-SHR-04",
+      "expect": "pass",
+      "commands": {
+        "cupsctl": {
+          "stdout": "_debug_logging=0\n_remote_admin=0\n_remote_any=0\n_share_printers=0\n_user_cancel_any=0\n"
+        }
+      }
+    },
+    {
+      "check": "MA-SHR-04",
+      "expect": "fail",
+      "commands": {
+        "cupsctl": {
+          "stdout": "_debug_logging=0\n_remote_admin=0\n_remote_any=0\n_share_printers=1\n_user_cancel_any=0\n"
+        }
+      }
+    },
+    {
+      "check": "MA-SHR-04",
+      "expect": "unknown",
+      "commands": {
+        "cupsctl": {
+          "stdout": "",
+          "exit": 1,
+          "stderr": "cupsctl: Unable to connect to server: No such file or directory\n"
+        }
+      }
+    },
+    {
+      "check": "MA-SHR-05",
+      "expect": "pass",
+      "commands": {
+        "systemsetup -getremoteappleevents": {
+          "stdout": "Remote Apple Events: Off\n"
+        }
+      },
+      "euid": 0
+    },
+    {
+      "check": "MA-SHR-05",
+      "expect": "fail",
+      "commands": {
+        "systemsetup -getremoteappleevents": {
+          "stdout": "Remote Apple Events: On\n"
+        }
+      },
+      "euid": 0
+    },
+    {
+      "check": "MA-SHR-05",
+      "expect": "unknown",
+      "commands": {
+        "systemsetup -getremoteappleevents": {
+          "stdout": "",
+          "exit": 1,
+          "stderr": "Error: unexpected\n"
+        }
+      },
+      "euid": 0
+    },
+    {
+      "check": "MA-SHR-05",
+      "expect": "skipped",
+      "commands": {
+        "systemsetup -getremoteappleevents": {
+          "stdout": "Remote Apple Events: On\n"
+        }
+      },
+      "name": "not root"
+    }
+  ]
+}
